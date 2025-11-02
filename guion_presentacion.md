@@ -1,9 +1,6 @@
 GUION PARA LA DEFENSA DE TFM: DETECCIÓN DE FRAUDES EN TARJETAS DE CRÉDITO
 =========================================================================
 
-**INSTRUCCIONES:**
-Este guion está diseñado para acompañar la presentación web interactiva. Cada sección corresponde a una "diapositiva" o vista de la página. El texto es una guía para tu discurso oral. Practícalo para que suene natural y ajústalo a tu propio estilo. El objetivo es usar las diapositivas como apoyo visual, no leerlas directamente.
-
 ---
 
 ### **Diapositiva 1: Portada (Tiempo: ~30 segundos)**
