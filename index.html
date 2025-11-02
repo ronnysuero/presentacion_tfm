@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defensa TFM: Detección de Fraudes en Tarjetas de Crédito</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #003366; /* Azul oscuro corporativo */
+            --secondary-color: #007bff; /* Azul brillante para acentos */
+            --text-color: #333;
+            --bg-color: #f8f9fa;
+            --header-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --body-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--body-font);
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            line-height: 1.6;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 0.75rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .navbar a {
+            color: var(--primary-color);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            font-weight: 600;
+            font-family: var(--header-font);
+            transition: color 0.3s, background-color 0.3s;
+            border-radius: 5px;
+        }
+
+        .navbar a:hover {
+            color: white;
+            background-color: var(--secondary-color);
+        }
+
+        .slide {
+            min-height: 100vh;
+            width: 100%;
+            padding: 8rem 5%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        .slide.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-content {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .slide h1 {
+            font-family: var(--header-font);
+            font-size: 3.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .slide h2 {
+            font-family: var(--header-font);
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .slide h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background-color: var(--secondary-color);
+        }
+
+        .slide p, .slide li {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        
+        .slide .lead {
+            font-size: 1.4rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            max-height: 80px;
+            width: auto;
+        }
+
+        #slide1 h1 {
+            font-size: 4rem;
+        }
+        #slide1 .subtitle {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+        #slide1 .authors {
+            font-size: 1.2rem;
+            margin-top: 2rem;
+        }
+        #slide1 .authors p {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        .card h3 {
+            color: var(--secondary-color);
+            font-family: var(--header-font);
+            margin-bottom: 1rem;
+        }
+        .card ul {
+            list-style-position: inside;
+        }
+
+        .chart-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .matrix-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 2rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .confusion-matrix {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            width: 350px;
+        }
+
+        .confusion-matrix h4 {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        .confusion-matrix table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        .confusion-matrix th, .confusion-matrix td {
+            padding: 0.8rem;
+            border: 1px solid #eee;
+        }
+
+        .confusion-matrix th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+        }
+        
+        .confusion-matrix .label {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .confusion-matrix .tn, .confusion-matrix .tp {
+            background-color: #e8f5e9; /* Verde claro */
+        }
+        
+        .confusion-matrix .fn, .confusion-matrix .fp {
+            background-color: #ffebee; /* Rojo claro */
+        }
+
+        .highlight {
+            color: var(--secondary-color);
+            font-weight: 700;
+        }
+        
+        .final-slide {
+            text-align: center;
+        }
+        .final-slide p {
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="#slide1">Inicio</a>
+        <a href="#slide2">Problema</a>
+        <a href="#slide4">Metodología</a>
+        <a href="#slide7">Resultados</a>
+        <a href="#slide11">Conclusiones</a>
+        <a href="#slide13">Futuro</a>
+        <a href="#slide14">Contacto</a>
+    </nav>
+
+    <section id="slide1" class="slide">
+        <div class="slide-content">
+            <div class="logo-container">
+                <img src="./umecit.png" alt="Logo UMECIT" class="logo">
+                <img src="./immune.png" alt="Logo IMMUNE" class="logo">
+            </div>
+            <p class="subtitle">Defensa de Trabajo de Fin de Máster</p>
+            <h1>Detección de Fraudes en Tarjetas de Crédito en el Sector Bancario</h1>
+            <div class="authors">
+                <p><strong>Autores:</strong> Ronny Zapata y Miguel Caballero</p>
+                <p><strong>Tutor:</strong> Manuel Lopez</p>
+                <p><strong>Fecha:</strong> 10/11/2025</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="slide2" class="slide">
+        <div class="slide-content">
+            <h2>El Problema: Una Amenaza Creciente y Sofisticada</h2>
+            <p class="lead">El fraude con tarjetas de crédito causa pérdidas millonarias y daña la confianza del cliente. Los métodos tradicionales son insuficientes ante la complejidad y evolución de los nuevos patrones de fraude.</p>
+            <div class="grid-container">
+                <div class="card">
+                    <h3>Impacto Directo</h3>
+                    <p>Pérdidas económicas sustanciales para bancos y titulares de tarjetas.</p>
+                </div>
+                <div class="card">
+                    <h3>Erosión de Confianza</h3>
+                    <p>Afecta la seguridad del consumidor en los sistemas de pago electrónico.</p>
+                </div>
+                <div class="card">
+                    <h3>Necesidad Estratégica</h3>
+                    <p>La detección robusta es un pilar para la sostenibilidad del sector financiero.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="slide3" class="slide">
+        <div class="slide-content">
+            <h2>Nuestra Misión: Encontrar la Mejor Defensa</h2>
+            <p class="lead">El objetivo principal de este estudio es identificar las técnicas de Machine Learning más eficientes y robustas para detectar transacciones fraudulentas, proporcionando una guía clara para su implementación en el sector bancario.</p>
+             <div class="grid-container">
+                <div class="card">
+                    <h3>Implementar</h3>
+                    <p>Desarrollar y entrenar un conjunto diverso de modelos de ML, desde árboles de decisión hasta redes neuronales y XGBoost.</p>
+                </div>
+                <div class="card">
+                    <h3>Comparar</h3>
+                    <p>Evaluar rigurosamente la efectividad de cada modelo utilizando métricas clave como F1-Score, Recall y AUC PR.</p>
+                </div>
+                <div class="card">
+                    <h3>Recomendar</h3>
+                    <p>Proponer los enfoques más adecuados basados en los hallazgos empíricos, considerando distintos objetivos operativos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="slide4" class="slide">
+        <div class="slide-content">
+            <h2>El Campo de Batalla: Un Dataset Realista y Complejo</h2>
+            <p class="lead">Utilizamos un dataset público de Kaggle con transacciones europeas reales. Su principal característica y nuestro mayor desafío es el extremo desbalanceo entre clases.</p>
+            <div class="chart-container">
+                <canvas id="classDistributionChart"></canvas>
+            </div>
+            <p style="text-align:center; font-weight: bold;">De 284,807 transacciones, <span class="highlight">¡solo el 0.17% son fraudulentas!</span> Esto exige estrategias especializadas.</p>
+        </div>
+    </section>
+
+    <section id="slide5" class="slide">
+        <div class="slide-content">
+            <h2>Nuestro Arsenal: Los Modelos Bajo la Lupa</h2>
+            <p class="lead">Evaluamos un espectro de algoritmos para obtener una visión completa, combinando modelos supervisados y no supervisados.</p>
+            <div class="grid-container">
+                <div class="card">
+                    <h3>Modelos Supervisados</h3>
+                    <ul>
+                        <li><strong>Árbol de Decisión (DT):</strong> Simple e interpretable.</li>
+                        <li><strong>Máquina de Soporte Vectorial (SVM):</strong> Potente para relaciones no lineales.</li>
+                        <li><strong>Red Neuronal (NN):</strong> Capaz de aprender patrones muy complejos.</li>
+                        <li><strong>XGBoost:</strong> Un estándar de la industria por su alto rendimiento.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Modelos No Supervisados</h3>
+                     <ul>
+                        <li><strong>Isolation Forest:</strong> Eficaz para aislar anomalías.</li>
+                        <li><strong>DBSCAN:</strong> Detecta outliers basándose en la densidad de los datos.</li>
+                        <li><strong>Rol:</strong> Usados como sistema complementario para detectar fraudes novedosos.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="slide6" class="slide">
+        <div class="slide-content">
+            <h2>Táctica Clave: Nivelando el Terreno de Juego</h2>
+            <p class="lead">Para que los modelos aprendan a identificar el fraude correctamente, primero debemos "enseñarles" cómo es. Abordamos el desbalanceo de datos con dos técnicas avanzadas.</p>
+            <div class="grid-container">
+                <div class="card">
+                    <h3>SMOTE (Synthetic Minority Over-sampling Technique)</h3>
+                    <p>Crea nuevas muestras de fraude "sintéticas" pero realistas, basadas en las transacciones fraudulentas existentes. Es como crear "avatares" de los fraudes conocidos para tener más ejemplos de los que aprender.</p>
+                </div>
+                <div class="card">
+                    <h3>GANs (Redes Generativas Adversarias)</h3>
+                    <p>Un enfoque de vanguardia donde dos redes neuronales compiten: una "falsificadora" (Generador) crea nuevos datos de fraude y una "detective" (Discriminador) intenta distinguirlos de los reales. El resultado son datos sintéticos de altísima calidad.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="slide7" class="slide">
+        <div class="slide-content">
+            <h2>Resultados: Comparativa de Modelos con SMOTE</h2>
+            <p class="lead">Tras balancear los datos con SMOTE, el modelo XGBoost Optimizado demostró ser el más robusto y equilibrado, superando a los demás en las métricas más importantes.</p>
+            <div class="chart-container">
+                <canvas id="resultsSmoteChart"></canvas>
+            </div>
+            <p style="text-align:center;"><span class="highlight">XGBoost Optimizado</span> logra el mejor balance, detectando el <span class="highlight">79%</span> de los fraudes (Recall) con una precisión del <span class="highlight">77%</span>.</p>
+        </div>
+    </section>
+
+    <section id="slide8" class="slide">
+        <div class="slide-content">
+            <h2>La Sorpresa: El Poder de las Redes Neuronales con GANs</h2>
+            <p class="lead">Al aumentar los datos con GANs, la Red Neuronal (NN) dio un salto cualitativo en su precisión, reduciendo drásticamente el número de falsas alarmas.</p>
+            <div class="matrix-container">
+                <div class="confusion-matrix">
+                    <h4>NN + SMOTE</h4>
+                    <table>
+                        <tr><td></td><th scope="col">Pred. Legítima</th><th scope="col">Pred. Fraude</th></tr>
+                        <tr><th scope="row" class="label">Real Legítima</th><td class="tn">56625</td><td class="fp">26</td></tr>
+                        <tr><th scope="row" class="label">Real Fraude</th><td class="fn">22</td><td class="tp">73</td></tr>
+                    </table>
+                </div>
+                <div class="confusion-matrix">
+                    <h4>NN + GAN (Opt.)</h4>
+                    <table>
+                        <tr><td></td><th scope="col">Pred. Legítima</th><th scope="col">Pred. Fraude</th></tr>
+                        <tr><th scope="row" class="label">Real Legítima</th><td class="tn">56639</td><td class="fp">12</td></tr>
+                        <tr><th scope="row" class="label">Real Fraude</th><td class="fn">24</td><td class="tp">71</td></tr>
+                    </table>
+                </div>
+            </div>
+            <p style="text-align:center; margin-top: 2rem;">El modelo con GAN <span class="highlight">redujo los Falsos Positivos en más de un 50%</span> (de 26 a 12), logrando la precisión más alta de todos los experimentos: <span class="highlight">86%</span>.</p>
+        </div>
+    </section>
+
+    <section id="slide9" class="slide">
+        <div class="slide-content">
+            <h2>El Veredicto: ¿Cuál es el Mejor Defensor?</h2>
+            <p class="lead">La elección del "mejor" modelo depende de la prioridad estratégica del banco: ¿maximizar la cantidad de fraudes detectados o minimizar las molestias a clientes inocentes?</p>
+            <div class="grid-container">
+                <div class="card">
+                    <h3>XGBoost + SMOTE</h3>
+                    <p><strong>Fortaleza:</strong> Mejor rendimiento general y mayor capacidad de detección (Recall del 79% y el mejor AUC PR de 0.8145).</p>
+                    <p><strong>Ideal para:</strong> Una estrategia que busca <span class="highlight">maximizar la cantidad de fraudes interceptados</span>, aceptando un número moderado de falsas alarmas.</p>
+                </div>
+                <div class="card">
+                    <h3>Red Neuronal + GAN</h3>
+                    <p><strong>Fortaleza:</strong> Precisión excepcional (86%) y el F1-Score más alto (0.80), minimizando las falsas alarmas.</p>
+                    <p><strong>Ideal para:</strong> Una estrategia enfocada en <span class="highlight">reducir costes operativos y el impacto negativo en el cliente</span>, al generar muy pocas alertas incorrectas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="slide11" class="slide">
+        <div class="slide-content">
+            <h2>Conclusiones Clave</h2>
+            <p class="lead">Nuestro estudio comparativo ofrece una visión clara sobre la eficacia de distintas estrategias de Machine Learning en un escenario realista de detección de fraude.</p>
+            <ul style="list-style-type: disc; text-align: left; max-width: 800px; margin: 0 auto;">
+                <li>El manejo del desbalanceo de clases con técnicas como <span class="highlight">SMOTE o GANs</span> no es opcional, es <span class="highlight">fundamental</span> para obtener resultados significativos.</li>
+                <li><span class="highlight">XGBoost Optimizado</span> se consagra como el modelo más robusto y equilibrado para una detección de fraude global.</li>
+                <li>Las <span class="highlight">GANs</span> demuestran ser una técnica de vanguardia y extremadamente poderosa para <span class="highlight">maximizar la precisión</span>, un factor clave en entornos operativos.</li>
+                <li>La elección final del modelo debe alinearse con la <span class="highlight">estrategia de negocio</span>: priorizar la tasa de detección (Recall) o la fiabilidad de las alertas (Precision).</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="slide12" class="slide">
+        <div class="slide-content">
+            <h2>Implicaciones Prácticas para el Sector Bancario</h2>
+            <p class="lead">Estos hallazgos se traducen en acciones concretas que las instituciones financieras pueden implementar para fortalecer sus sistemas de defensa contra el fraude.</p>
+            <div class="grid-container">
+                <div class="card">
+                    <h3>Adoptar Modelos Avanzados</h3>
+                    <p>Ir más allá de los sistemas basados en reglas y adoptar modelos de ML como XGBoost y Redes Neuronales, que capturan patrones complejos con mayor eficacia.</p>
+                </div>
+                <div class="card">
+                    <h3>Usar Métricas Correctas</h3>
+                    <p>Evaluar los sistemas con métricas como <span class="highlight">AUC PR y F1-Score</span>. La "exactitud" general es una métrica engañosa en problemas de fraude.</p>
+                </div>
+                <div class="card">
+                    <h3>Implementar Estrategias de Datos</h3>
+                    <p>Integrar técnicas de manejo de desbalanceo (SMOTE/GANs) en el ciclo de vida del desarrollo de modelos para mejorar su rendimiento.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="slide13" class="slide">
+        <div class="slide-content">
+            <h2>Trabajo Futuro: La Próxima Frontera</h2>
+            <p class="lead">Este estudio sienta las bases para futuras investigaciones que pueden hacer los sistemas de detección aún más potentes, inteligentes y aplicables al mundo real.</p>
+            <div class="grid-container">
+                <div class="card">
+                    <h3>Modelos de Grafos (GNNs)</h3>
+                    <p>Analizar transacciones no como eventos aislados, sino como una red conectada para descubrir redes de fraude complejas.</p>
+                </div>
+                <div class="card">
+                    <h3>Despliegue en Tiempo Real</h3>
+                    <p>Investigar la arquitectura de sistemas para que estos modelos puedan dar una respuesta en milisegundos, aprobando o bloqueando transacciones en vivo.</p>
+                </div>
+                <div class="card">
+                    <h3>IA Explicable (XAI)</h3>
+                    <p>Integrar herramientas que expliquen "por qué" un modelo marca una transacción como fraude, para dar poder a los analistas y mejorar la transparencia.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="slide14" class="slide final-slide">
+        <div class="slide-content">
+            <h2>Agradecimientos y Contacto</h2>
+            <p class="lead">Gracias por su tiempo y atención.</p>
+            <p>Agradecemos a nuestro tutor, Manuel Lopez, a la universidad y a todos los que nos han apoyado en este viaje.</p>
+            <div style="margin-top: 3rem;">
+                <p><strong>Ronny Zapata</strong> - ronnysuero@gmail.com</p>
+                <p><strong>Miguel Caballero</strong> - inv.e22.mc@gmail.com</p>
+            </div>
+            <h2 style="margin-top: 4rem; font-size: 3rem;">¿Preguntas?</h2>
+        </div>
+    </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Chart creation functions ---
+    function createClassDistributionChart() {
+        const ctxClass = document.getElementById('classDistributionChart');
+        if (ctxClass && !ctxClass.dataset.rendered) {
+            new Chart(ctxClass, {
+                type: 'bar',
+                data: {
+                    labels: ['Legítima (Clase 0)', 'Fraude (Clase 1)'],
+                    datasets: [{
+                        label: 'Número de Transacciones',
+                        data: [284315, 492],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 99, 132, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeOutBounce'
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Distribución de Clases: Extremo Desbalanceo',
+                            font: { size: 18, family: 'var(--header-font)' }
+                        },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            type: 'logarithmic',
+                            title: {
+                                display: true,
+                                text: 'Número de Transacciones (Escala Logarítmica)'
+                            }
+                        }
+                    }
+                }
+            });
+            ctxClass.dataset.rendered = 'true';
+        }
+    }
+
+    function createResultsSmoteChart() {
+        const ctxSmote = document.getElementById('resultsSmoteChart');
+        if (ctxSmote && !ctxSmote.dataset.rendered) {
+            new Chart(ctxSmote, {
+                type: 'bar',
+                data: {
+                    labels: ['Árbol Decisión', 'SVM', 'Red Neuronal', 'XGBoost Optimizado'],
+                    datasets: [
+                    {
+                        label: 'Recall (Detección)',
+                        data: [0.69, 0.83, 0.77, 0.79],
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Precision (Fiabilidad)',
+                        data: [0.39, 0.10, 0.74, 0.77],
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'F1-Score (Balance)',
+                        data: [0.50, 0.18, 0.75, 0.78],
+                        backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1
+                    }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeOutBounce'
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Rendimiento de Modelos con SMOTE',
+                            font: { size: 18, family: 'var(--header-font)' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(2);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1.0,
+                            title: {
+                                display: true,
+                                text: 'Puntuación'
+                            }
+                        }
+                    }
+                }
+            });
+            ctxSmote.dataset.rendered = 'true';
+        }
+    }
+
+    // --- Intersection Observer for slide animations and chart rendering ---
+    const slides = document.querySelectorAll('.slide');
+    let slideSections = Array.from(slides);
+    let currentSlideIndex = 0;
+
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.5 // Se considera visible si el 50% lo está
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                currentSlideIndex = slideSections.findIndex(slide => slide.id === entry.target.id);
+
+                // Render chart when its slide is visible
+                if (entry.target.id === 'slide4') {
+                    createClassDistributionChart();
+                }
+                if (entry.target.id === 'slide7') {
+                    createResultsSmoteChart();
+                }
+            }
+        });
+    }, observerOptions);
+
+    slides.forEach(slide => {
+        observer.observe(slide);
+    });
+
+    // --- Keyboard Navigation ---
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            const nextSlideIndex = currentSlideIndex + 1;
+            if (nextSlideIndex < slideSections.length) {
+                slideSections[nextSlideIndex].scrollIntoView({ behavior: 'smooth' });
+            }
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            const prevSlideIndex = currentSlideIndex - 1;
+            if (prevSlideIndex >= 0) {
+                slideSections[prevSlideIndex].scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    });
+});
+</script>
+
+</body>
+</html>
