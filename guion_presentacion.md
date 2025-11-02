@@ -7,7 +7,7 @@ GUION PARA LA DEFENSA DE TFM: DETECCIÓN DE FRAUDES EN TARJETAS DE CRÉDITO
 
 **(Mientras la diapositiva está en pantalla)**
 
-"Buenos días a todos. Mi nombre es [Tu Nombre] y junto con mi compañero [Nombre del Compañero], estamos aquí para presentar la defensa de nuestro Trabajo de Fin de Máster titulado 'Detección de Fraudes en Tarjetas de Crédito en el Sector Bancario'.
+"Buenos días a todos. Mi nombre es Ronny Zapata y junto con mi compañero Miguel Caballero, estamos aquí para presentar la defensa de nuestro Trabajo de Fin de Máster titulado 'Detección de Fraudes en Tarjetas de Crédito en el Sector Bancario'.
 
 Agradecemos la presencia del jurado, de nuestro tutor, y de todos los asistentes."
 
