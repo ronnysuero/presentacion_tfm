@@ -277,6 +277,57 @@
             background-color: var(--secondary-color);
             transition: width 0.3s ease;
         }
+
+        @media print {
+            body {
+                overflow: visible !important;
+                background-color: white;
+            }
+
+            .navbar, .progress-container {
+                display: none !important;
+            }
+
+            .slide {
+                min-height: auto;
+                height: 100vh;
+                width: 100%;
+                padding: 2rem 5%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                border-bottom: none;
+                opacity: 1 !important;
+                transform: none !important;
+                page-break-after: always;
+                box-shadow: none;
+            }
+
+            .slide:last-of-type {
+                page-break-after: avoid;
+            }
+
+            .slide h1 { font-size: 2.5rem; }
+            .slide h2 { font-size: 2rem; }
+            .slide p, .slide li { font-size: 1rem; }
+            .slide .lead { font-size: 1.2rem; }
+
+            .card {
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                page-break-inside: avoid;
+            }
+
+            .chart-container, .matrix-container {
+                page-break-inside: avoid;
+            }
+
+            canvas {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+        }
     </style>
 </head>
 <body>
