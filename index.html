@@ -261,9 +261,29 @@
             text-align: center;
         }
 
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background-color: #f0f0f0;
+            z-index: 1001;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background-color: var(--secondary-color);
+            transition: width 0.3s ease;
+        }
     </style>
 </head>
 <body>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
 
     <nav class="navbar">
         <a href="#slide1">Inicio</a>
@@ -657,6 +677,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
                 currentSlideIndex = slideSections.findIndex(slide => slide.id === entry.target.id);
+                updateProgressBar();
 
                 // Render chart when its slide is visible
                 if (entry.target.id === 'slide4') {
@@ -687,8 +708,27 @@ document.addEventListener('DOMContentLoaded', () => {
             if (prevSlideIndex >= 0) {
                 slideSections[prevSlideIndex].scrollIntoView({ behavior: 'smooth' });
             }
+        } else if (e.key === 'f' || e.key === 'F') {
+            e.preventDefault();
+            toggleFullScreen();
         }
     });
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+
+    function updateProgressBar() {
+        const progressBar = document.getElementById('progressBar');
+        const progress = ((currentSlideIndex + 1) / slideSections.length) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
 });
 </script>
 
